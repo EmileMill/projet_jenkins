@@ -1,0 +1,23 @@
+name: feature_certification
+description: 'Premiere  version de certification - configuration'
+type: module
+core: 8.x
+dependencies:
+  - block
+  - colorbox
+  - comment
+  - ctools
+  - datetime
+  - field
+  - file
+  - image
+  - language
+  - menu_ui
+  - node
+  - path
+  - system
+  - taxonomy
+  - text
+  - user
+  - views
+version: v0

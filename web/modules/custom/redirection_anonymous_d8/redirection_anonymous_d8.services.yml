@@ -1,0 +1,6 @@
+services:
+  redirection_anonymous_d8.event_subscriber:
+    class: Drupal\redirection_anonymous_d8\EventSubscriber\RedirectAnonymousSubscriber
+    arguments: []
+    tags:
+      - {name: event_subscriber}

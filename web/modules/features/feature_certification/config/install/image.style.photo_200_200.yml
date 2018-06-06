@@ -1,0 +1,13 @@
+langcode: fr
+status: true
+dependencies: {  }
+name: photo_200_200
+label: 'Photo_200*200'
+effects:
+  914ea6a3-087f-4591-8325-7c923519e9ff:
+    uuid: 914ea6a3-087f-4591-8325-7c923519e9ff
+    id: image_scale_and_crop
+    weight: 1
+    data:
+      width: 200
+      height: 200

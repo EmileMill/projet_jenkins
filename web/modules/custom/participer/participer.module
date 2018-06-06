@@ -1,0 +1,277 @@
+<?php 
+
+// Chemin qui nous ramen vers le contrilleur de base
+use Drupal\Core\Entity\EntityManager;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+use Drupal\block\Entity\Block; // pour pouvoir utiliser un bloc
+
+use Drupal\node\NodeInterface; // pour les nodes interface
+
+use Drupal\taxonomy\Entity\Term; // pour les terme de taxo
+
+
+
+use Drupal\node\Entity\Node; // pour les nodes
+use Drupal\taxonomy\Entity; // // pour les terme la taxo
+
+
+/***
+implemente hook_user_login
+*/
+function participer_user_login($account){
+//kint($account);
+//die(); // pour eviter de retomber automatiquement dans la page daccueil
+//drupal_set_message(t('Bonjour'),$account->get_current_user(oid),'success');
+// getAccountName()
+drupal_set_message(t('Bienvenu %name !' , array('%name' => $account->getAccountName() ) ) );
+
+
+//drupal_set_message('Bonjour et bienvenue !' .$account->getAccountName());
+}
+
+// user_log et user_logout sont des hook qui doivent etre fai dans ce fichier
+
+function participercachedestructeur_user_logout($account){
+	\Drupal::service('cache_tags.invalidator')->invalidateTags(['ma_session']);
+}
+
+function participercachedestructeur_user_login($account){
+	\Drupal::service('cache_tags.invalidator')->invalidateTags(['ma_session']);
+}
+
+/*
+ exemple de hook qui insert les donnees dun node en BD (hook a remplacer par le nom du module)
+function modulename_node_insert(Drupal|Core|Entity|EntityInterface $node) {
+  db_insert('mytable')
+    ->fields(array(
+    'nid' => $node->id(), 
+    'extra' => $node->extra,
+  ))
+    ->execute();
+}
+*/
+
+	 function participer_page_attachments(array &$page){
+	 	// J'attache ma librairie que quand le nom de la route ci dessous est appellées dans l'URL qui affiche que les type de contenus "evenement"
+	 	// $routeName = \Drupal::routeMatch()->getParameter('node')->getType()=='evenement';
+
+	 	//if( $routeName =='TRUE'){
+		 $page['#attached']['library'][]= 'participer/participer'; // le 1eme participer est le nom du module. Le 2eme participer est le nom de la librarie participer.libraries.yml
+
+                     /*    
+			// METHODE 2 QUI PERMET DE SUPPRIMER LE BUTTON DU MODULE ADDTOCALENDAR SI LA DATE EST INF A LA DATE DU JOUR
+			// VA AVEC LE FICHIER PARTICIPER.JS
+			Methode pour passer la valeur d'un champs à un un fichier js (partciper.js) aprés avor attaché la libarairie
+			$node = \Drupal::routeMatch()->getParameter('node');
+
+                         if ($node instanceof \Drupal\node\NodeInterface) {
+
+                              if($node->getType()=='evenement'){
+ 
+	                   $dateDuchamps= $node->field_date->value;
+				//Je passe la variable date au fichier participer.js
+                           $page['#attached']['drupalSettings']['participer']['participer']['dateDuchamps'] =  $dateDuchamps;
+
+                          }
+                  	}
+
+			*/
+
+	}
+/*
+
+function participer_preprocess_field(&$variables) {
+   // METHODE 1 QUI PERMET DE SUPPRIMER LE BUTTON DU MODULE ADDTOCALENDAR SI LA DATE EST INF A LA DATE DU JOUR
+  // Si on est dans le field_date des évènements.
+  if($variables['element']['#field_name'] == "field_date" && $variables['element']['#bundle'] == "evenement") {
+	
+    $date = strtotime($variables['element']['0']['#attributes']['datetime']);
+
+    if($date < time()) {
+     unset($variables['#attached']); // Je supprime le contenu
+     unset($variables['#attached']);
+     // unset($variables['items'][0]['content']['#suffix']);
+
+    }
+  }
+}
+*/
+
+/**
+ * Implements hook_preprocess_node().
+ */
+
+	function participer_preprocess_node(&$variables) {
+			/////////////////////////////////////
+		    $node = \Drupal::routeMatch()->getParameter('node');
+
+		    if ($node instanceof \Drupal\node\NodeInterface && $variables['node']->getType()=='evenement')  {
+		      // $dateDuchamps = $node->get('field_date')->getValue()[0] ;
+			// OU 
+			$dateDuchamps= $node->field_date->value;
+		      // kint($dateDuchamps);
+		    }
+		     /////////////////////////////////////
+
+	     	   if($variables['node']->getType()=='evenement'){
+
+			  // kint($variables['content']);
+			//  kint($variables['user']->id()); exit;
+			// kint($variables['node']); exit;
+
+
+			$titre = $variables['node']->getTitle();
+			
+			 // Résultat de la ligne suivante affiche "2019-01-10T12:20:10" => donne  "2019-01-10 12:20:10"
+			 $date= str_replace('T', ' ', $variables['node']->get('field_date')->getString()); 
+			 // $date= $variables['content']['field_date'][0]['#text'];
+
+
+			$adresseCarte= $variables['node']->field_adresse->getString();
+			$lieu= $variables['node']->get('field_lieu')->getString();
+			$description= $variables['node']->get('field_description')->getString();
+
+
+
+			// Recuper l'id du user (organisateurs de l'evenement).
+			 $idUser= $variables['node']->get('field_organisateurs')->getString();
+			$idUserArray = explode(', ', $idUser);
+
+			$listIdUser = \Drupal::entityTypeManager()->getStorage('user')->loadMultiple($idUserArray);
+
+			 
+			$organisateurs = [];
+
+			foreach($listIdUser as $key=>$user){
+
+				// $organisateurs[$key]['name']= $user->name->value;
+
+				$organisateurs[$key]['email']= $user->mail->value; 
+				$organisateurs[$key]['field_prenom']= $user->field_prenom->value; 
+				$organisateurs[$key]['field_nom']= $user->field_nom->value;
+				$organisateurs[$key]['user_picture']= $user->user_picture->entity->uri->value;  
+
+			}
+
+
+			$photo = $variables['node']->get('field_photo_s_')->entity->uri->value;
+
+			 // Affiche "15, 11" qui est en strinsg. Il faut le convertit en array
+			 $idTermesTaxoForTagEventInStrings = $variables['node']->get('field_dans_la_meme_rubrique')->getString(); 
+			 $idTermesTaxoForTagEvent = explode(',', $idTermesTaxoForTagEventInStrings); // convertir en array
+
+			 $tagsEvenement=  \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadMultiple($idTermesTaxoForTagEvent); ;
+				
+			$tagTermesEvenement= [];
+
+			foreach($tagsEvenement as $keys => $tags){
+				$tagTermesEvenement[$keys]= $tags->name->value;
+			}
+
+			// Passons ces variables à notre template de twig associé
+			// $variables['recupere_ma_date_via_twig'] = $date;
+			 $variables['recupere_mon_titre_via_twig'] = $titre;
+			 
+			 $variables['recupere_mon_lieu_via_twig'] = $lieu;
+			 $variables['recupere_mon_adress_carte_via_twig'] = $adresseCarte;
+			 $variables['recupere_ma_description_via_twig'] = $description;
+			 $variables['recupere_info_user_via_twig'] = $organisateurs;
+
+			 $variables['recupere_ma_photo_via_twig'] = $photo;
+			 $variables['recupere_mes_tags_via_twig'] = $tagTermesEvenement;
+
+		}
+
+		
+	} 
+
+
+/**
+ * Implements hook_block_access().
+ */
+	function participer_preprocess_block(&$variables) {
+
+		  
+		  $id = $variables['elements']['#plugin_id'];
+		   // kint($id); // Affiche tous les les bloc du site et leur id sur la page  front
+
+		  if($id == "participate_event_block") {
+		    $node = \Drupal::routeMatch()->getParameter('node'); 
+		    
+		    if($node instanceof \Drupal\node\NodeInterface) {
+		      $dateDuchamps = $node->get('field_date')->getValue()[0] ;    
+		      if(strtotime($dateDuchamps['value']) < time()){
+			 unset($variables['content']); // Je supprime le contenu 
+		      }
+		    }
+		  }
+	} 
+
+
+function participer_preprocess_comment(&$variables) {
+
+	  /** @var \Drupal\comment\CommentInterface $comment */
+	  $comment = $variables['elements']['#comment']->get('comment_body')->getValue('list')[0]['value'];
+	// kint($comment); exit;
+	// Passons ces variables à notre template de twig associé
+			// $variables['recupere_mon_commentaire_via_twig'] = $comment;
+}
+
+
+
+/*
+function participer_theme($existing, $type, $theme, $path){
+
+    return array('NombreParticipant' =>
+        array(	'template' => 'NombreParticipantBlock',
+            'variables' => array(
+                'title' => null,
+                'description' => null,
+		'total_participation'=>NULL,
+		'participants' 	=> NULL,
+		 'toto'	 	=> NULL,
+            ),
+        ),
+    );
+}
+
+*/
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+/*       OUBIEN
+function certif_page_attachments(array &$page){
+ $routeName = \Drupal::routeMatch()->getRouteName();
+ if ($routeName == 'participer.participer.form') {
+   $page['#attached']['library'][] = 'participer/participer';
+ }
+}*/
+
+/*
+function participer_form_node_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  foreach (array_keys($form['actions']) as $action) {
+    if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit' && $form_id == 'submit_form') {
+      $form['actions'][$action]['#submit'][] = 'participer_form_submit';
+    }
+  }
+}
+*/
+
+///////////////////////////////////////////////////////////////////////////////////
+//////////////////////// Passer les variables du node evenement dans le twig //////
+///////////////////////
+///////////////////////////////////////////////////////////////////////////////////
+
+/*
+use Drupal\Node\NodeInterface;
+use Drupal\node\Entity\Node;
+use Drupal\taxonomy\Entity;
+*/
+
+
+
+

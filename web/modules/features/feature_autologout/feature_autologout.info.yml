@@ -1,0 +1,5 @@
+name: 'feature autologout'
+type: module
+core: 8.x
+dependencies:
+  - autologout

@@ -1,0 +1,7 @@
+langcode: fr
+status: true
+dependencies: {  }
+id: commentaires_evenement
+label: 'Commentaires évenement'
+target_entity_type_id: node
+description: 'commentaires sur l''événement en cours'

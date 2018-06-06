@@ -1,0 +1,28 @@
+name: 'Feature Evenement v4'
+description: 'Feature TDC evenement'
+type: module
+core: 8.x
+dependencies:
+  - address
+  - addtocalendar
+  - better_exposed_filters
+  - block
+  - colorbox
+  - comment
+  - datetime
+  - feature_actualite
+  - feature_certification
+  - field
+  - file
+  - geolocation
+  - image
+  - language
+  - menu_ui
+  - node
+  - path
+  - route_condition
+  - taxonomy
+  - text
+  - user
+  - video_embed_field
+  - views

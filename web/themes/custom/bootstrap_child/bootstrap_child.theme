@@ -1,0 +1,122 @@
+<?php
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * @file
+ * Bootstrap sub-theme.
+ *
+ * Place your custom PHP code in this file.
+ */
+function bootstrap_child_preprocess_page_title(&$variables) {
+	$route_name = \Drupal::routeMatch()->getRouteName();
+	if($route_name == 'user.login') {
+		$variables['title'] = t('Page de connexion');
+	}
+}
+
+
+function bootstrap_child_form_user_login_form_alter(&$form, FormStateInterface $form_state, $form_id){
+	// kint($form);
+	// kint($form_state);
+	// die();
+	$configRulesTitle = 'au moins 8 caractères comprenant :';
+	$configRules = array(
+		'au moins 1 caractère spécial (!?$%@#&|^µ:/;.£)',
+		'au moins 1 caractère majuscule (A,B,C...)',
+		'au moins 1 caractère minuscule (a,b,c...)',
+		'au moins 1 caractère numérique (1,2,3...)',
+		'pas le prénom ou le nom de l\'utilisateur'
+	);
+
+	$rulesContent = '<p>'.$configRulesTitle.'</p>';
+	$rulesContent .= '<ul>';
+	foreach ($configRules as $configRule) {
+		$rulesContent .= '<li class="item-rule-form-login">'.$configRule.'</li>';
+	}
+	$rulesContent .= '</ul>';
+
+	// Ajouter un bouton mot de passe oublié 
+	if ($form_id=='user_login_form') {
+
+    	$form['mot_passe_oublie'] = [
+        '#markup'=>t('<a href="user/password"><input class="button js-form-submit form-submit btn-primary btn icon-before" value="Forget password?"></a>'),
+        '#weight' => 1001,
+
+    	];
+    }	
+	// On ajoute nos règles de validation dans la description du champs password
+	$form['pass']['#description'] = $rulesContent;
+
+	// On ajoute la librairie pour cette page
+	$form['#attached']['library'] = 'bootstrap_child/login';
+
+}
+
+
+// Pour l'affichage de page title proprement
+// function bootstrap_child_theme_suggestions_alter(array &$suggestions, array $variables, $hook){
+// 	$route_name = \Drupal::routeMatch()->getRouteName();
+
+// 	if($route_name == 'user.login' && isset($variables['elements']) && $variables['elements']['#plugin_id'] == 'page_title_block') {
+// 		$suggestions[] = $hook.'__'.$variables['elements']['#plugin_id'].'__'.'login_page';
+// 	}
+
+
+// }
+
+
+/**
+ * Implements hook_theme().
+ */
+function bootstrap_child_theme($existing, $type, $theme, $path){
+	return [
+		// Tests D8
+		'chart_tests_drupal8' => [
+			'template' => 'chart-tests-drupal8',
+			'variables' => ['data' => NULL]
+		],
+		'timer_qcm_test_drupal8' => [
+			'template' => 'timer-qcm-test-drupal8',
+			'variables' => ['data' => NULL]
+		],
+		// fin Tests D8
+	];
+}
+
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function bootstrap_child_page_attachments_alter(array &$attachments){
+	$routeName = \Drupal::routeMatch()->getRouteName();
+
+	// Tests D8
+	if ($routeName == 'test_drupal8.qcm' ||
+		$routeName == 'view.tests_drupal_8.page_1' ||
+		$routeName == 'view.tests_drupal_8.page_2' ||
+		$routeName == 'entity.user.canonical')
+	{
+		$attachments['#attached']['library'][] = 'bootstrap_child/test-drupal8-styles';
+	}
+	if ($routeName == 'test_drupal8.qcm'){
+		$attachments['#attached']['library'][] = 'bootstrap_child/test-drupal8-qcm';
+	}
+	if ($routeName == 'entity.user.canonical' ){
+		$attachments['#attached']['library'][] = 'bootstrap_child/tests-drupal8-dashboard';
+	}
+	// fin Tests D8
+
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function bootstrap_child_form_alter(&$form, FormStateInterface $form_state, $form_id){
+	# ajoute ckeditor à la vue "instructions avant le test" (Tests D8)
+	if ($form_id == 'views_ui_config_item_form' && !empty($form['options']['content'])) {
+		$form['options']['content']['#editor'] = TRUE;
+	}
+}
+
+

@@ -1,0 +1,5 @@
+name: 'redirection_anonymous_d8'
+type: module
+description: Redirection obligatoire sur la page d'accueil
+core: 8.x
+package: 'Custom'

@@ -1,0 +1,25 @@
+langcode: fr
+status: true
+dependencies:
+  config:
+    - comment.type.commentaires_evenement
+id: comment.commentaires_evenement.default
+targetEntityType: comment
+bundle: commentaires_evenement
+mode: default
+content:
+  author:
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+  subject:
+    type: string_textfield
+    weight: 1
+    region: content
+    settings:
+      size: 60
+      placeholder: ''
+    third_party_settings: {  }
+hidden:
+  langcode: true

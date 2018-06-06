@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Contains redirection_anonymous_d8.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function redirection_anonymous_d8_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the redirection_anonymous_d8 module.
+    case 'help.page.redirection_anonymous_d8':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Redirection obligatoire sur la page d&#039;accueil') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+function redirection_anonymous_d8_form_alter(&$form, $form_state,$form_id){
+  // if ($form_id=='user_login_form') {
+
+  //   	$form['mot_passe_oublie'] = [
+  //       '#markup'=>t('<a href="user/password"><input class="button js-form-submit form-submit btn-primary btn icon-before" value="Forget password?"></a>'),
+  //       '#weight' => 1001,
+
+  //   	];
+  //   }	
+
+}
+
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+// function redirection_anonymous_menu_local_tasks_alter(&$data, $route_name) {
+//   if($route_name == 'user.login') {
+//     $data['tabs'][0]['user.pass']['#access'] = TRUE;
+//   }
+// }
+
+// function redirection_anonymous_form_alter(&$form, $form_state, $form_id) {
+//   if ($form_id=='user_login_form') {
+//       $form['reset'] = array(
+//      '#type' => 'markup',
+//      '#markup' => '<a href="/contact">' .t('Reset') . '<a/>',
+//      '#weight' => 1001,
+//     );
+//   }
+// }

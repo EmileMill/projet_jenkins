@@ -1,0 +1,13 @@
+langcode: fr
+status: true
+dependencies:
+  config:
+    - comment.type.commentaires_evenement
+id: comment.commentaires_evenement.default
+targetEntityType: comment
+bundle: commentaires_evenement
+mode: default
+content: {  }
+hidden:
+  langcode: true
+  links: true
